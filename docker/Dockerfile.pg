@@ -1,0 +1,24 @@
+# Dockerfile.pg
+ARG PG_MAJOR=16
+FROM postgres:${PG_MAJOR}-bookworm
+
+# >>> Proxy (sizniki): 172.23.11.105:2002
+ARG http_proxy
+ARG https_proxy
+ENV http_proxy=${http_proxy} \
+    https_proxy=${https_proxy} \
+    no_proxy=localhost,127.0.0.1
+
+# apt-ni proxydan o‘tkazish
+RUN echo "Acquire::http::Proxy \"${http_proxy}\";"  > /etc/apt/apt.conf.d/01proxy && \
+    echo "Acquire::https::Proxy \"${https_proxy}\";" >> /etc/apt/apt.conf.d/01proxy
+
+# PGDG repo va kalit
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates gnupg wget lsb-release && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" \
+      > /etc/apt/sources.list.d/pgdg.list && \
+    wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/postgres.gpg && \
+    apt-get update && apt-get install -y --no-install-recommends \
+      postgresql-${PG_MAJOR}-cron && \
+    rm -rf /var/lib/apt/lists/*

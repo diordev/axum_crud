@@ -1,0 +1,11 @@
+FROM adminer:latest
+
+# Root sifatida yozish uchun foydalanuvchini o'zgartirish
+USER root
+
+# Custom CSS faylini designs/custom papkasiga joylashtiramiz
+RUN mkdir -p /var/www/html/designs/custom
+COPY adminer.css /var/www/html/designs/custom/adminer.css
+
+# Yana `www-data` foydalanuvchisiga qaytish (ixtiyoriy, xavfsizlik uchun yaxshi)
+USER www-data
